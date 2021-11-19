@@ -26,6 +26,7 @@ async function run() {
         const carsCollection = database.collection("cars");
         const ordersCollection = database.collection("Orders");
         const reviewsCollection = database.collection("Reviews");
+        const usersCollection = database.collection("User");
 
         // // get all the Cars detail from data base
         app.get("/cars", async (req, res) => {
@@ -33,6 +34,26 @@ async function run() {
             const cars = await cursor.toArray();
             res.json(cars);
         })
+
+        // post a car product means add a product
+
+        app.post("/car", async (req, res) => {
+            const car = req.body;
+            const result = await carsCollection.insertOne(car);
+            res.json(result)
+        })
+
+        // car delete 
+        app.delete('/cars/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await carsCollection.deleteOne(query);
+            res.json(result);
+
+        })
+
+
+
         // get single car data
         app.get("/cars/:_id", async (req, res) => {
             const _id = req?.params?._id;
@@ -112,58 +133,37 @@ async function run() {
 
 
 
+        // save an user in the database;
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.json(result);
+        })
+        // make a user admin 
+
+        app.put("/users/admin", async (req, res) => {
+            console.log("hit");
+            const user = req.body;
+            console.log(req.body);
+            const filter = { email: user.email };
+            const updateDoc = { $set: { role: 'Admin' } }
+            const result = await usersCollection.updateOne(filter, updateDoc)
+            res.json(result);
+        })
+
+        // making sure about admin
+        app.get("/user/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === "Admin") {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin })
+        })
 
 
-        // // get all order of user 
-        // app.get("/allorders", async (req, res) => {
-        //     const cursor = ordersCollection.find({});
-        //     const allOrders = await cursor.toArray();
-        //     res.json(allOrders);
-        // })
-
-
-        // //   my order list done
-        // app.get("/myorders", async (req, res) => {
-        //     const emailData = req.query.email;
-        //     console.log(emailData);
-        //     if (emailData) {
-        //         // Object.values(emailData) 
-        //         const query = { email: emailData };
-        //         const result = await ordersCollection.find(query).toArray();
-        //         console.log(result);
-        //         res.json(result)
-        //     }
-
-
-        // })
-        // // get new tour program 
-
-        // app.post("/program", async (req, res) => {
-        //     const newTourProgram = req.body;
-        //     const result = await tourProgramsCollection.insertOne(newTourProgram);
-
-        //     res.json(result)
-        // })
-
-        // // post method order placed right fully
-        // app.post("/program/order", async (req, res) => {
-
-        //     const newOrder = req.body;
-        //     const result = await ordersCollection.insertOne(newOrder);
-
-        //     res.json(result);
-
-        // })
-        // // delete method by id 
-
-        // app.delete("/order/delete/:id", async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) }
-        //     const result = await ordersCollection.deleteOne(query);
-        //     res.json(result);
-
-
-        // })
 
 
     }
