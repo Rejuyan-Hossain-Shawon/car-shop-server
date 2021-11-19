@@ -49,6 +49,13 @@ async function run() {
             const result = await ordersCollection.insertOne(order);
             res.json(result)
         })
+        // get all orders
+
+        app.get('/orders', async (req, res) => {
+            const cursor = ordersCollection.find({});
+            const orders = await cursor.toArray();
+            res.json(orders);
+        })
 
 
 
@@ -62,6 +69,31 @@ async function run() {
 
             res.json(result)
         })
+        //  order delete
+        app.delete('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await ordersCollection.deleteOne(query);
+            res.json(result);
+
+        })
+
+        // update status of order
+
+        app.put('/order/:id', async (req, res, next) => {
+            const id = req.params.id;
+            const order = req.body;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updateDoc = { $set: order }
+            const result = await ordersCollection.updateOne(filter, updateDoc, options);
+            res.json(result);
+        });
+
+
+
+
+
 
 
         // reviews
